@@ -1,0 +1,38 @@
+---
+title: "Music Insights: Building models"
+author: "Tanya Bonilla"
+date: "11/14/2019"
+output: html_document
+---
+
+First, we begin by loading the libraries we will be using to create our model. We also load the first part of the **Music Insights** assignment so we can build upon what we already have.
+```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+suppressMessages(library("tidyverse"))
+suppressMessages(library("knitr"))
+suppressMessages(library("dplyr"))
+suppressMessages(library("caret"))
+
+purl("MusicInsights.Rmd", output = "part1.r")
+source("part1.r")
+
+```
+
+We want to answer the question: ***What is the average rating that person gave songs?*** and in order to do this we use the rowMeans function to find the mean of all the ratings of each person. We save the findings by appending them to the end of the original ***preferences*** table. 
+
+```{r}
+set.seed(385)
+
+preferences <- preferences[-c(1, 7),]
+survey$means <- rowMeans(preferences[3:34])
+sample_selection <- createDataPartition(survey$means, p = 0.75, list = FALSE)
+train <- survey[sample_selection,]
+test <- survey[-sample_selection,]
+train_model <- lm(means ~ academic_major + year_born + sex  + year_born, data = survey)
+train_model
+predictions <- train_model %>% predict(test)
+R2(predictions, test$means)
+MAE(predictions, test$means)
+```
+Looking at the R2 and MAE variable, we can see that there is no academic_major, year_born, and sex cannot predict the avarage rating of a person.
+
+
